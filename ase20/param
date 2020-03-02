@@ -1,0 +1,14 @@
+MACHINE_LISTE=machines
+IF=enp0s3
+DOMAINE_IP="ubo.local"
+
+SERVEUR_NFS=serveur
+EXPORT_HOME=/export/home
+EXPORT_HOME_OPT=rw,no_root_squash
+MOUNT_HOME=/home/serveur
+MOUNT_HOME_OPT=hard,rw
+
+EXPORT_APP=/export/opt
+EXPORT_APP_OPT=ro
+MOUNT_APP=/opt
+MOUNT_APP_OPT=soft,ro
