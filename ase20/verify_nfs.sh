@@ -6,10 +6,27 @@
 hostname=$(hostname)
 
 # Vérification de la machine serveur
-if [ $hostname = "serveur" ]
+if [ $hostname = $SERVEUR_NFS ]
 then
   echo "Vérification: serveur"
   echo ""
+
+  # Ping vers toutes les autres machine si serveur
+  echo "Vérification machines"
+  echo ""
+  while IFS= read -r line
+    do
+      nomActuel=$(echo $line | cut -d ' ' -f 2)
+      ping -c1  $nomActuel 1>/dev/null
+      if [ "$?" = 0 ]
+      then
+        echo -e "Ping vers $nomActuel : \033[32m réussi \033[0m"
+      else
+        echo -e "Ping vers $nomActuel : \033[31m échoué \033[0m"
+      fi
+  done < "$MACHINE_LISTE"
+  echo ""
+ 
   # On vérifie si le service nfs-serveur est actif
   echo "- Vérification services"
   isActive=$(systemctl is-active nfs-server.service)
@@ -73,31 +90,31 @@ then
   else
     echo -e "--- répertoire: $EXPORT_HOME -- \033[32m trouvé \033[0m"
   fi
-fi
-
 # Vérification de la machine client
-if [ $hostname = "client" ]
-then
+else
   echo "Vérification: client"
   echo ""
+
   # Ping vers le serveur
   echo "- Ping vers le serveur"
   ping -c1  $SERVEUR_NFS 1>/dev/null
   if [ "$?" = 0 ]
   then
-    echo -e "--- Ping vers $SERVEUR_NFS \033[32m réussi \033[0m"
+    echo -e "--- Ping vers $SERVEUR_NFS : \033[32m réussi \033[0m"
   else
-    echo -e "--- Ping vers $SERVEUR_NFS \033[31m échoué \033[0m"
+    echo -e "--- Ping vers $SERVEUR_NFS : \033[31m échoué \033[0m"
   fi
 
   # Ligne à vérifier dans /etc/fstab
   ligne1="$SERVEUR_NFS:$EXPORT_HOME $MOUNT_HOME nfs $MOUNT_HOME_OPT 0 0"
   ligne2="$SERVEUR_NFS:$EXPORT_APP $MOUNT_APP nfs $MOUNT_APP_OPT 0 0"
+
   # Fichier cible
   cible="/etc/fstab"
 
   echo ""
   echo "- Vérificaton $cible"
+  
   # Vérification des lignes
   if  grep -q "$ligne1" $cible
   then
