@@ -5,7 +5,7 @@
 hostname=$(hostname)
 
 # Partie exécuté si la machine est serveur
-if [ $hostname = "serveur" ]
+if [ $hostname = $SERVEUR_NFS ]
 then
     echo "identification: serveur"
 
@@ -70,16 +70,17 @@ then
     # Mise à jour de la table courante de systèmes de fichiers partagés par NFS
     exportfs -a
     exportfs -f
-fi
-
+    
 # Partie exécuté si la machine est client
-if [ $hostname = "client" ]
-then
+else
     echo "identification: client"
 
+    # On stop le firewall également le firewall car il peut causer des erreurs dans le client
+    systemctl stop firewalld.service
+
     # Préparation des lignes à inséré dans /etc/fstab
-    ligne1="$SERVEUR_NFS:$EXPORT_HOME  $MOUNT_HOME  nfs    $MOUNT_HOME_OPT    0 0"
-    ligne2="$SERVEUR_NFS:$EXPORT_APP   $MOUNT_APP           nfs    $MOUNT_APP_OPT    0 0"
+    ligne1="$SERVEUR_NFS:$EXPORT_HOME $MOUNT_HOME nfs $MOUNT_HOME_OPT 0 0"
+    ligne2="$SERVEUR_NFS:$EXPORT_APP $MOUNT_APP nfs $MOUNT_APP_OPT 0 0"
 
     # Suppression des lignes pour éviter les doublons
     cible="/etc/fstab"
